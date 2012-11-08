@@ -5,7 +5,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.List;
 
-import com.xulei.TankClient.Tank.Direction;
 
 public class Bullet {
 	public static final int XSPEED	 = 10;
@@ -21,7 +20,7 @@ public class Bullet {
 
 
 	int x, y;
-	Tank.Direction dir;
+	Direction dir;
 	private boolean Live = true;
 	
 	public boolean isLive() {
@@ -53,7 +52,8 @@ public class Bullet {
 			return;
 			}
 		Color c = g.getColor();
-		g.setColor(Color.BLACK);
+		if(good) g.setColor(Color.RED);
+		else g.setColor(Color.BLACK);
 		g.fillOval(x, y, WIDTH, HEIGHT);
 		g.setColor(c);
 		
@@ -112,9 +112,17 @@ public class Bullet {
 				this.Live&&
 				this.getRect().intersects(t.getRect())&&
 				t.isLive()==true&&
-				(this.good != t.isGood())
-			){
+				(this.good != t.isGood()))
+		{
+			if(t.isGood()){
+				t.setLife(t.getLife()-20);
+			
+				if(t.getLife()<=0)
+					t.setLive(false);
+			}else
+			{
 			t.setLive(false);
+			}
 			this.Live=false;
 			Explode e = new Explode(this.x, this.y, this.tc);
 			tc.explodes.add(e);

@@ -5,8 +5,21 @@ import java.awt.event.*;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.xulei.TankClient.Tank.Direction;
-
+/**
+ * 
+ * Class TankClient is the main windows of game.
+ * Instruction of this game 
+ * Ctrl----Fire
+ * A ------Super Fire
+ * F2 -----New Life
+ * up -----Move Up
+ * Down ---Move Down
+ * Left----Move Left
+ * Right---Move Right
+ * @author Xulei
+ *
+ */
+@SuppressWarnings("serial")
 public class TankClient extends Frame{
 	public static final int GAME_WIDTH = 800;
 	public static final int GAME_HEIGHT = 600;
@@ -22,45 +35,66 @@ public class TankClient extends Frame{
 	List<Explode> explodes = new ArrayList<Explode>();
 	List<Tank> enemyTanks = new ArrayList<Tank>();
 	
-	
+	Buffer bb = new Buffer();
 
 	
 	Image offScreenImage = null;//double buffer
 	@Override
 	public void paint(Graphics g) {
+		/*
+		 * create and show info in game
+		 */
 		g.drawString("bullets count: "+bullets.size(), 10, 50);
 		g.drawString("explodes count: "+explodes.size(), 10, 70);
 		g.drawString("enemyTanks count: "+enemyTanks.size(), 10, 90);
+		g.drawString("Tank Life: "+this.myTank.getLife(), 10, 110);
+		
+		if(this.enemyTanks.size()<=0)
+		{
+			for(int i=0; i <5 ;i++)
+			{
+				this.enemyTanks.add(new Tank(50+40*(i+1),50,false,Direction.D,this));
+			}
+		}
+		
+		
+		
 		myTank.draw(g);
+		myTank.eat(bb);
 		w1.draw(g);
 		w2.draw(g);
+		bb.draw(g);
 //		enemyTank.draw(g);
 
-		for(Tank t : enemyTanks)
+		for(int i = 0; i < enemyTanks.size() ; i++)
+		//for(Tank t : enemyTanks)
 		{
+			Tank t = enemyTanks.get(i);
 			t.draw(g);
 			t.collidesWithWall(w1);
 			t.collidesWithWall(w2);
 			t.collodesWithTank(this.enemyTanks);
 		}
 		
-		for(Bullet b : bullets)
+		for(int i = 0; i < bullets.size() ; i++)
 		{
-//			b.hitTank(enemyTank);
+			Bullet b = bullets.get(i);
+			b.draw(g);
 			b.hitTanks(enemyTanks);
 			b.hitTank(myTank);
-			b.draw(g);
 			b.hitWall(w1);
 			b.hitWall(w2);
+			
 			
 			
 		
 		//	else
 		//		bullets.remove(b);
 		}
-		
-		for(Explode e: explodes)
+		for(int i = 0; i < explodes.size() ; i++)
+		//for(Explode e: explodes)
 		{
+			Explode e = explodes.get(i);
 			e.draw(g);
 		}
 	}
@@ -79,12 +113,23 @@ public class TankClient extends Frame{
 		paint(gOffScreen);
 		g.drawImage(offScreenImage, 0, 0, null);
 	}
+	/**
+	 * show the Frame in game
+	 */
 
 	public void launchFrame()
 	{
-		for(int i=0; i <10 ;i++)
+		
+		int initTankCount = 10;
+		
+		
+		
+		initTankCount = Integer.parseInt(PropertyManager.getProperty("initTankCount"));
+		
+		
+		for(int i=0; i <initTankCount ;i++)
 		{
-			this.enemyTanks.add(new Tank(50+40*(i+1),50,false,Tank.Direction.D,this));
+			this.enemyTanks.add(new Tank(50+40*(i+1),50,false,Direction.D,this));
 		}
 		this.setLocation(400,300);
 		this.setSize(GAME_WIDTH,GAME_HEIGHT);
@@ -128,9 +173,6 @@ public class TankClient extends Frame{
 	private class KeyMonitor extends KeyAdapter{
 		
 /*
- * inherit only need to implement methods that you interested in. However, interface need to implement all of them.(non-Javadoc)
- * that's why use inherit here.
- * @see java.awt.event.KeyAdapter#keyPressed(java.awt.event.KeyEvent)
  */
 
 		@Override

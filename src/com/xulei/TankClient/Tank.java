@@ -2,9 +2,13 @@ package com.xulei.TankClient;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class Tank {
@@ -22,12 +26,45 @@ public class Tank {
 	private TankClient tc = null;
 	
 	private boolean live = true;
+	private LifeBar lB = new LifeBar();
 	
+	private int life = 100;
+	
+	public int getLife() {
+		return life;
+	}
+
+	public void setLife(int life) {
+		this.life = life;
+	}
+
 	private boolean good;
 	
 	public boolean isGood() {
 		return good;
 	}
+	
+	private static Toolkit tk = Toolkit.getDefaultToolkit();
+	private static Map<Direction,Image> imglib = new HashMap<Direction,Image>();
+	
+	static{
+		
+		imglib.put(Direction.U, tk.getImage(Tank.class.getClassLoader().getResource("image/up.png")));
+		imglib.put(Direction.RU, tk.getImage(Tank.class.getClassLoader().getResource("image/up-right.png")));
+		imglib.put(Direction.R, tk.getImage(Tank.class.getClassLoader().getResource("image/right.png")));
+		imglib.put(Direction.RD, tk.getImage(Tank.class.getClassLoader().getResource("image/down-right.png")));
+		imglib.put(Direction.D, tk.getImage(Tank.class.getClassLoader().getResource("image/down.png")));
+		imglib.put(Direction.LD, tk.getImage(Tank.class.getClassLoader().getResource("image/down-left.png")));
+		imglib.put(Direction.L,  tk.getImage(Tank.class.getClassLoader().getResource("image/left.png")));
+		imglib.put(Direction.LU,  tk.getImage(Tank.class.getClassLoader().getResource("image/up-left.png")));
+		
+		System.out.print("image init successful!");
+		System.out.print("image height"+ tk.getImage(Tank.class.getClassLoader().getResource("image/up-left.png")).getHeight(null));
+		
+	}
+	
+
+	
 
 	private boolean bL = false,  
 					bU = false,
@@ -35,7 +72,7 @@ public class Tank {
 					bD = false;
 	private static Random r = new Random();
 	
-	enum Direction{L,LU,U,RU,R,RD,D,LD,S};
+
 	
 	private Direction dir  = Direction.S;
 	private Direction BarrelDir = Direction.D;
@@ -88,7 +125,7 @@ public class Tank {
 			}else
 				return;
 		}
-		Color c = g.getColor();
+		/*Color c = g.getColor();
 		if(good)
 		{
 		g.setColor(Color.RED);
@@ -99,6 +136,10 @@ public class Tank {
 		g.fillOval(x, y, WIDTH,HEIGHT);
 		}
 		g.setColor(c);
+		if(good) this.lB.draw(g);
+		
+		
+		
 		
 		switch(BarrelDir){
 		case L:
@@ -127,9 +168,9 @@ public class Tank {
 			break;
 		case S:
 			break;
-		}
-		
-		
+		}*/
+		if(good) this.lB.draw(g);
+		g.drawImage(imglib.get(BarrelDir), x, y, null);
 		move();
 	}
 	
@@ -241,6 +282,11 @@ public class Tank {
 		case KeyEvent.VK_UP:   bU=false; break;
 		case KeyEvent.VK_RIGHT:bR=false; break;
 		case KeyEvent.VK_DOWN: bD=false; break;
+		case KeyEvent.VK_A : this.superFire();break;
+		case KeyEvent.VK_F2: if (!this.live){
+									this.live = true;
+									this.life = 100;
+									}
 		}
 		locateDirection();
 
@@ -266,6 +312,24 @@ public class Tank {
 		return b;
 	}
 	
+	public Bullet fire(Direction dir)
+	{
+		if(!live) return null;
+		Bullet b = new Bullet(this.tc,x+Tank.WIDTH/2-Bullet.WIDTH/2,y+Tank.HEIGHT/2-Bullet.HEIGHT/2,good,dir);
+		tc.bullets.add(b);
+		return b;
+	}
+	
+	public void superFire()
+	{
+		Direction[] dirs = Direction.values();
+		for(int i = 0; i < 8 ; i++)
+		{
+			this.fire(dirs[i]);
+			
+		}
+	}
+	
 	
 	
 	
@@ -273,6 +337,11 @@ public class Tank {
 		return new Rectangle(x,y,Tank.WIDTH,Tank.HEIGHT);
 	}
 	
+	/**
+	 * Wall Detection Function
+	 * @param w Wall object
+	 * @return if collidesWithWall return true, or false
+	 */
 	public boolean collidesWithWall(Wall w)
 	{
 		if (this.live && this.getRect().intersects(w.getRect()))
@@ -299,6 +368,30 @@ public class Tank {
 		}
 		return false;
 	}
+	
+	private class LifeBar{
+		public void draw(Graphics g)
+		{
+			Color c = g.getColor();
+			g.setColor(Color.RED);
+			g.drawRect(x, y-10, Tank.WIDTH, 10);
+		    int w = Tank.WIDTH*life/100;
+		    g.fillRect(x, y-10, w, 10);
+		    g.setColor(c);
+		}
+	}
+	
+	public boolean eat(Buffer b)
+	{
+		if (this.live && b.isLife() &&this.getRect().intersects(b.getRect()))
+		{
+			b.setLife(false);
+			this.life = 100;
+			return true;
+		}
+		return false;
+	}
+	
 	
 
 }

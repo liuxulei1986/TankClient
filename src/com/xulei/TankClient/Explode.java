@@ -22,6 +22,18 @@ public class Explode {
 
 
 	int[] diameter ={4,7,12,18,26,32,49,30,14,6};//diameter of Explode
+	/*
+	private static Toolkit tk = Toolkit.getDefaultToolkit();
+	
+	
+	private static Image[] imgs = {
+		tk.getImage(Explode.class.getClassLoader().getResource("image/0.git")),
+		
+		
+	};
+	
+	private static boolean init = false; 
+	*/
 	
 	int step = 0;
 	
@@ -30,6 +42,13 @@ public class Explode {
 	
 	public void draw(Graphics g)
 	{
+		/*if(false == init)
+		{
+			for (int i = 0; i < imgs.length; i++) {
+				g.drawImage(imgs[i], -100, -100, null);
+			}
+			init = true;
+		}*/
 		if(!live) {
 			tc.explodes.remove(this);
 			return;
