@@ -2,22 +2,71 @@ package com.xulei.TankClient;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.OutputStream;
+import java.util.List;
+import java.util.ArrayList;
+
+import com.xulei.TankClient.Tank.Direction;
 
 public class TankClient extends Frame{
 	public static final int GAME_WIDTH = 800;
 	public static final int GAME_HEIGHT = 600;
 	
-	Tank myTank = new Tank(50,50);
+	Tank myTank = new Tank(50,50, true ,this);
+	//Tank enemyTank = new Tank(100,100,false,this);
+	
+	Wall w1 = new Wall(100,200,20,150, this);
+	Wall w2 = new Wall(300,100,300,20, this);
+	
+	
+	List<Bullet> bullets = new ArrayList<Bullet>();
+	List<Explode> explodes = new ArrayList<Explode>();
+	List<Tank> enemyTanks = new ArrayList<Tank>();
+	
+	
+
 	
 	Image offScreenImage = null;//double buffer
 	@Override
 	public void paint(Graphics g) {
+		g.drawString("bullets count: "+bullets.size(), 10, 50);
+		g.drawString("explodes count: "+explodes.size(), 10, 70);
+		g.drawString("enemyTanks count: "+enemyTanks.size(), 10, 90);
 		myTank.draw(g);
+		w1.draw(g);
+		w2.draw(g);
+//		enemyTank.draw(g);
+
+		for(Tank t : enemyTanks)
+		{
+			t.draw(g);
+			t.collidesWithWall(w1);
+			t.collidesWithWall(w2);
+			t.collodesWithTank(this.enemyTanks);
+		}
+		
+		for(Bullet b : bullets)
+		{
+//			b.hitTank(enemyTank);
+			b.hitTanks(enemyTanks);
+			b.hitTank(myTank);
+			b.draw(g);
+			b.hitWall(w1);
+			b.hitWall(w2);
+			
+			
+		
+		//	else
+		//		bullets.remove(b);
+		}
+		
+		for(Explode e: explodes)
+		{
+			e.draw(g);
+		}
 	}
 	
 	public void update(Graphics g){
-		super.update(g);
+		//super.update(g);
 		if(offScreenImage == null)
 		{
 			offScreenImage = this.createImage(GAME_WIDTH,GAME_HEIGHT);
@@ -33,6 +82,10 @@ public class TankClient extends Frame{
 
 	public void launchFrame()
 	{
+		for(int i=0; i <10 ;i++)
+		{
+			this.enemyTanks.add(new Tank(50+40*(i+1),50,false,Tank.Direction.D,this));
+		}
 		this.setLocation(400,300);
 		this.setSize(GAME_WIDTH,GAME_HEIGHT);
 		this.setTitle("TankClient");
